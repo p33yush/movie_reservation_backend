@@ -1,9 +1,12 @@
 const prisma = require('../config/database');
-const { hashPassword } = require('../utils/password');
+const { hashPassword, comparePassword } = require('../utils/password');
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require('../utils/jwt');
 const AppError = require('../utils/AppError');
 
 async function register({ name, email, password }) {
-  // 1. Check if email already exists
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });
@@ -12,10 +15,8 @@ async function register({ name, email, password }) {
     throw new AppError('Email already registered', 409);
   }
 
-  // 2. Hash password
   const passwordHash = await hashPassword(password);
 
-  // 3. Create user
   const user = await prisma.user.create({
     data: {
       name,
@@ -25,7 +26,6 @@ async function register({ name, email, password }) {
     },
   });
 
-  // 4. Return user WITHOUT password
   return {
     id: user.id,
     name: user.name,
@@ -35,4 +35,28 @@ async function register({ name, email, password }) {
   };
 }
 
-module.exports = { register };
+async function login({ email, password }) {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new AppError('Invalid email or password', 401);
+  }
+
+  const isMatch = await comparePassword(password, user.passwordHash);
+  if (!isMatch) {
+    throw new AppError('Invalid email or password', 401);
+  }
+
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+    accessToken: generateAccessToken(user),
+    refreshToken: generateRefreshToken(user),
+  };
+}
+
+module.exports = { register, login };
