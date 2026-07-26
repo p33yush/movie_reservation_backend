@@ -5,10 +5,12 @@ const authRoutes = require('./auth.routes');
 const movieRoutes = require('./movies.routes');
 const theatreRoutes = require('./theatres.routes');
 const userRoutes = require('./users.routes');
+const showtimeRoutes = require('./showtimes.routes');
 
 router.use('/auth', authRoutes);
 router.use('/movies', movieRoutes);
 router.use('/theatres', theatreRoutes);
-router.use('/users',userRoutes);
+router.use('/users', userRoutes);
+router.use('/showtimes', showtimeRoutes);
 
 module.exports = router;

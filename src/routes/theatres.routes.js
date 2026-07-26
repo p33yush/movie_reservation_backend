@@ -1,14 +1,19 @@
 const express = require('express');
 const router = express.Router();
+const theatreController = require('../controllers/theatre.controller');
+const { authenticate, authorize } = require('../middleware/auth.middleware');
+const validate = require('../middleware/validate.middleware');
 
-// GET /api/theatres
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all theatres' });
-});
+const { createTheatreSchema, updateTheatreSchema, createScreenSchema } = require('../validators/theatre.validator');
 
-// GET /api/theatres/:id
-router.get('/:id', (req, res) => {
-  res.json({ message: `Get theatre ${req.params.id}` });
-});
+
+router.get('/', theatreController.getAllTheatres);
+router.get('/:id', theatreController.getTheatreById);
+
+router.post('/', authenticate, authorize('ADMIN'), validate(createTheatreSchema), theatreController.createTheatre);
+router.put('/:id', authenticate, authorize('ADMIN'), validate(updateTheatreSchema), theatreController.updateTheatre);
+router.delete('/:id', authenticate, authorize('ADMIN'), theatreController.deleteTheatre);
+
+router.post('/:theatreId/screens', authenticate, authorize('ADMIN'), validate(createScreenSchema), theatreController.createScreen);
 
 module.exports = router;

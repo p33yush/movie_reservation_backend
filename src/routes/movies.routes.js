@@ -1,19 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const movieController = require('../controllers/movie.controller');
+const { authenticate, authorize } = require('../middleware/auth.middleware');
+const validate = require('../middleware/validate.middleware');
 
-// GET /api/movies
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all movies' });
-});
+const { createMovieSchema, updateMovieSchema } = require('../validators/movie.validator');
 
-// GET /api/movies/:id
-router.get('/:id', (req, res) => {
-  res.json({ message: `Get movie ${req.params.id}` });
-});
 
-// POST /api/movies (admin only - placeholder)
-router.post('/', (req, res) => {
-  res.json({ message: 'Create movie' });
-});
+router.get('/', movieController.getAllMovies);
+router.get('/:id', movieController.getMovieById);
+
+router.post('/', authenticate, authorize('ADMIN'), validate(createMovieSchema), movieController.createMovie);
+router.put('/:id', authenticate, authorize('ADMIN'), validate(updateMovieSchema), movieController.updateMovie);
+router.delete('/:id', authenticate, authorize('ADMIN'), movieController.deleteMovie);
 
 module.exports = router;
