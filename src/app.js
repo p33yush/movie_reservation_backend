@@ -5,6 +5,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const routes = require('./routes');
 const errorHandler = require('./middleware/error.middleware');
+const { connectRedis } = require('./config/redis');
 
 
 const cors = require('cors');
@@ -24,6 +25,11 @@ app.get('/', (req, res) => {
 app.use('/api', routes);
 app.use(errorHandler);
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+connectRedis().then(() => {
+    app.listen(port, () => {
+        console.log(`Server is running on http://localhost:${port}`);
+    });
+}).catch((error) => {
+    console.log(`Failed to start server on port ${port}`, error);
 });
+

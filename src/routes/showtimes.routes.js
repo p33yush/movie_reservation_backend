@@ -9,6 +9,10 @@ const { createShowtimeSchema, updateShowtimeSchema } = require('../validators/sh
 
 router.get('/', showtimeController.getShowtimes);
 router.get('/:id', showtimeController.getShowtimesById);
+router.get('/:id/seats', showtimeController.getSeatMap);
+
+router.post('/:id/lock', authenticate, showtimeController.lockSeat);
+router.post('/:id/unlock', authenticate, showtimeController.unlockSeat);
 
 router.post('/', authenticate, authorize('ADMIN'), validate(createShowtimeSchema), showtimeController.createShowtime);
 router.put('/:id', authenticate, authorize('ADMIN'), validate(updateShowtimeSchema), showtimeController.updateShowtime);

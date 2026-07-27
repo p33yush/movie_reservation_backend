@@ -46,4 +46,38 @@ async function deleteShowtime(req, res, next) {
     }
 }
 
-module.exports = { getShowtimes, getShowtimesById, createShowtime, updateShowtime, deleteShowtime };
+async function getSeatMap(req, res, next) {
+    try {
+        const seatMap = await showtimeService.getSeatMap(req.params.id);
+        res.json({ success: true, data: seatMap });
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function lockSeat(req, res, next) {
+    try {
+        const { id } = req.params;
+        const { seatId } = req.body;
+        const userId = req.user.id;
+
+        const result = await showtimeService.lockSeat(id, seatId, userId);
+        res.json({ success: true, data: result });
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function unlockSeat(req, res, next) {
+    try {
+        const { id } = req.params;
+        const { seatId } = req.body;
+        const userId = req.user.id;
+        const result = await showtimeService.unlockSeat(id, seatId, userId);
+        res.json({ success: true, data: result });
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { getShowtimes, getShowtimesById, createShowtime, updateShowtime, deleteShowtime, getSeatMap, lockSeat, unlockSeat };
