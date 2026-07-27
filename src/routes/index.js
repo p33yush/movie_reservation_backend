@@ -6,7 +6,12 @@ const movieRoutes = require('./movies.routes');
 const theatreRoutes = require('./theatres.routes');
 const userRoutes = require('./users.routes');
 const showtimeRoutes = require('./showtimes.routes');
+const reservationRoutes = require('./reservation.routes');
+const paymentRoutes=require('./payments.routes');
 
+
+router.use('/payments',paymentRoutes);
+router.use('/reservations', reservationRoutes);
 router.use('/auth', authRoutes);
 router.use('/movies', movieRoutes);
 router.use('/theatres', theatreRoutes);
