@@ -1,4 +1,6 @@
 const prisma = require('../config/database');
+const emailService=require('../services/email.service');
+const QRCode=require('qrcode');
 
 async function handleWebhook(req, res, next) {
     try {
@@ -18,6 +20,27 @@ async function handleWebhook(req, res, next) {
                 where: { reservationId: reservationId },
                 data: { status: 'COMPLETED' }
             });
+
+            const fullReservation=await prisma.reservation.findUnique({
+                where:{id:reservationId},
+                include:{
+                    user:true,
+                    showtime:{include:{
+                        movie:true,
+                        screen:{include:{theatre:true}}
+                    }}
+                }
+            });
+
+            const qrData=JSON.stringify({
+                reservationId:fullReservation.id,
+                userId: fullReservation.userId,
+                status:fullReservation.status
+
+            });
+            const qrCodeBase64=await QRCode.toDataURL(qrData);
+
+            await emailService.sendTicketEmail(fullReservation.user.email,fullReservation.showtime.movie.title,fullReservation.showtime,qrCodeBase64);
 
             console.log(`Reservation ${reservationId} has been confirmed!`);
         }
