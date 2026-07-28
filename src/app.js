@@ -6,17 +6,17 @@ const port = process.env.PORT || 3000;
 const routes = require('./routes');
 const errorHandler = require('./middleware/error.middleware');
 const { connectRedis } = require('./config/redis');
-
+const {globalLimiter}=require('./middleware/rateLimiter');
 
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-app.use(cors());           // Allows requests from your React frontend
-app.use(helmet());         // Adds security headers to protect your API
-app.use(morgan('dev'));    // Logs every request: "GET / 200 5ms"
-app.use(express.json());   // Parses JSON in request body (for POST/PUT requests)
-
+app.use(cors());           // reqs from react frontend
+app.use(helmet());         // security headers for api
+app.use(morgan('dev'));    // logs every req
+app.use(express.json());   // json parsed in request body 
+app.use(globalLimiter);    // rate limiting for all reqs
 
 app.get('/', (req, res) => {
     res.json({ message: 'MovieReservation API' });
