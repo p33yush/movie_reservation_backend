@@ -1,14 +1,32 @@
-async function getMe(req, res, next) {
-    try {
-      const { id, name, email, role, createdAt } = req.user;
+const userService = require('../services/user.service');  
   
-      res.json({
-        success: true,
-        data: { id, name, email, role, createdAt },
+  async function getProfile(req,res,next){
+    try{
+      const userId = req.user.id;
+      const userProfile = await userService.getUserProfile(userId);
+      res.status(200).json({
+        success:true,
+        data:userProfile,
+      })
+    }
+    catch(err){
+      next(err);
+    }
+  }
+
+  async function getReservations(req,res,next){
+    try{
+      const userId=req.user.id;
+      const reservationsData = await userService.getUserReservations(userId);
+      res.status(200).json({
+        success:true,
+        data:reservationsData,
       });
-    } catch (err) {
+    }
+    catch(err){
       next(err);
     }
   }
   
-  module.exports = { getMe };
+  
+  module.exports = { getProfile,getReservations };

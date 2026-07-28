@@ -4,6 +4,7 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 
-router.get('/me', authenticate, userController.getMe);
+router.get('/me', authenticate, userController.getProfile);
+router.get('/me/reservations',authenticate,userController.getReservations);
 
 module.exports = router;
