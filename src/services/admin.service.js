@@ -1,41 +1,38 @@
 const prisma=require('../config/database');
 
-async function getDashboardStats(){
-    const revenueAgg=await prisma.payment.aggregate({
-        _sum:{
-            amount:true
-        },
-        where:{
-            status:'COMPLETED'
+async function getDashboardStats({ startDate, endDate } = {}) {
+    const dateFilter = {};
+    if (startDate || endDate) {
+        dateFilter.createdAt = {};
+        if (startDate) dateFilter.createdAt.gte = new Date(startDate);
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            dateFilter.createdAt.lte = end;
         }
+    }
+
+    const revenueAgg = await prisma.reservation.aggregate({
+        _sum: { totalAmount: true },
+        where: { status: 'CONFIRMED', ...dateFilter }
     });
 
-    const ticketsSold=await prisma.reservedSeat.count({
-        where:{
-            reservation:{
-                status:'CONFIRMED'
-            }
-        }
+    const ticketsSold = await prisma.reservedSeat.count({
+        where: { reservation: { status: 'CONFIRMED', ...dateFilter } }
     });
 
-    const totalUsers=await prisma.user.count({
-        where:{
-            role:'USER'
-        }
+    const totalUsers = await prisma.user.count({
+        where: { role: 'USER', ...dateFilter }
     });
 
-    const movies=await prisma.movie.findMany({
-        select:{
-            title:true,
-            showtimes:{
-                select:{
-                    reservations:{
-                        where:{
-                            status:'CONFIRMED'
-                        },
-                        select:{
-                            totalAmount:true
-                        }
+    const movies = await prisma.movie.findMany({
+        select: {
+            title: true,
+            showtimes: {
+                select: {
+                    reservations: {
+                        where: { status: 'CONFIRMED', ...dateFilter },
+                        select: { totalAmount: true }
                     }
                 }
             }
@@ -44,22 +41,23 @@ async function getDashboardStats(){
 
     const revenueByMovie = movies.map(movie => {
         let movieRevenue = 0;
-
         movie.showtimes.forEach(showtime => {
             showtime.reservations.forEach(res => {
-                movieRevenue+=parseFloat(res.totalAmount);
+                movieRevenue += parseFloat(res.totalAmount);
             });
         });
         return {
             title: movie.title,
             revenue: movieRevenue
         };
-    }).filter(movie => movie.revenue >0).sort((a,b) => b.revenue-a.revenue);
+    }).filter(movie => movie.revenue > 0).sort((a,b) => b.revenue - a.revenue);
 
     return {
-        totalRevenue: revenueAgg._sum.amount ? parseFloat(revenueAgg._sum.amount): 0,
-        ticketsSold,totalUsers,revenueByMovie
+        totalRevenue: revenueAgg._sum.totalAmount ? parseFloat(revenueAgg._sum.totalAmount) : 0,
+        ticketsSold, 
+        totalUsers, 
+        revenueByMovie
     };
 }
 
-module.exports = {getDashboardStats};
+module.exports = { getDashboardStats };

@@ -12,9 +12,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
+const paymentController = require('./controllers/payment.controller');
+
 app.use(cors());           // reqs from react frontend
 app.use(helmet());         // security headers for api
 app.use(morgan('dev'));    // logs every req
+
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
+
 app.use(express.json());   // json parsed in request body 
 app.use(globalLimiter);    // rate limiting for all reqs
 

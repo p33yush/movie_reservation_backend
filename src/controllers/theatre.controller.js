@@ -56,4 +56,14 @@ async function createScreen(req, res, next) {
     }
 }
 
-module.exports = { getAllTheatres, getTheatreById, createTheatre, updateTheatre, deleteTheatre, createScreen };
+async function deleteScreen(req, res, next) {
+    try {
+        const screen = await theatreService.deleteScreen(req.params.screenId);
+        res.json({ success: true, data: screen, message: 'Screen deleted' });
+    } catch (err) {
+        next(err);
+    }
+}
+
+
+module.exports = { getAllTheatres, getTheatreById, createTheatre, updateTheatre, deleteTheatre, createScreen,deleteScreen };

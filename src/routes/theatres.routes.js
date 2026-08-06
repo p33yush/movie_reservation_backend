@@ -15,5 +15,6 @@ router.put('/:id', authenticate, authorize('ADMIN'), validate(updateTheatreSchem
 router.delete('/:id', authenticate, authorize('ADMIN'), theatreController.deleteTheatre);
 
 router.post('/:theatreId/screens', authenticate, authorize('ADMIN'), validate(createScreenSchema), theatreController.createScreen);
+router.delete('/:theatreId/screens/:screenId', authenticate, authorize('ADMIN'), theatreController.deleteScreen);
 
 module.exports = router;

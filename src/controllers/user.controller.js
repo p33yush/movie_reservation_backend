@@ -14,6 +14,17 @@ const userService = require('../services/user.service');
     }
   }
 
+  async function updateProfile(req, res, next) {
+    try {
+        const userId = req.user.id;
+        const updatedUser = await userService.updateUserProfile(userId, req.body);
+        res.json({ success: true, data: updatedUser });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
   async function getReservations(req,res,next){
     try{
       const userId=req.user.id;
@@ -29,4 +40,4 @@ const userService = require('../services/user.service');
   }
   
   
-  module.exports = { getProfile,getReservations };
+  module.exports = { getProfile,getReservations,updateProfile };

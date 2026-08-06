@@ -6,5 +6,6 @@ const { authenticate } = require('../middleware/auth.middleware');
 
 router.get('/me', authenticate, userController.getProfile);
 router.get('/me/reservations',authenticate,userController.getReservations);
+router.put('/me', authenticate, userController.updateProfile);
 
 module.exports = router;

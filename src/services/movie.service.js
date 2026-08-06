@@ -28,7 +28,7 @@ async function getAllMovies({ status, genre, search, page = 1, limit = 20 }) {
 async function getMovieById(id) {
     const movie = await prisma.movie.findUnique({
         where: { id: parseInt(id) },
-        include: { showtimes: true },
+        include: { showtimes: { include: { screen: { include: { theatre: true } } } } },
     });
     if (!movie) {
         throw new AppError('Movie not found', 404);
@@ -62,10 +62,22 @@ async function deleteMovie(id) {
         throw new AppError('Movie not found', 404);
     }
 
-    await prisma.movie.delete({ where: { id: parseInt(id) } });
+    // NEW: Stop deletion if people have paid for tickets to this movie
+    const activeReservations = await prisma.reservation.findFirst({
+        where: {
+            showtime: { movieId: parseInt(id) },
+            status: 'CONFIRMED'
+        }
+    });
 
+    if (activeReservations) {
+        throw new AppError('Cannot delete: Movie has active confirmed bookings.', 409);
+    }
+
+    await prisma.movie.delete({ where: { id: parseInt(id) } });
     return existing;
 }
+
 
 module.exports = { getAllMovies, getMovieById, createMovie, updateMovie, deleteMovie };
 

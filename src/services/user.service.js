@@ -18,11 +18,25 @@ async function getUserProfile(userId) {
     return user;
 }
 
+async function updateUserProfile(userId,data){
+    const user=await prisma.user.update({
+        where:{ id: parseInt(userId)},
+        data: {
+            name: data.name,
+            email: data.email
+        },
+        select:{
+            id:true, name:true, email:true, role:true,createdAt:true
+        }
+    });
+    return user;
+}
+
 async function getUserReservations(userId) {
     const reservations = await prisma.reservation.findMany({
         where: { 
             userId: parseInt(userId),
-            status: { not: 'PENDING' } 
+            status: { not: 'CANCELLED' } 
         },
         include: {
             showtime: {
@@ -66,5 +80,5 @@ async function getUserReservations(userId) {
 
 module.exports = {
     getUserProfile,
-    getUserReservations
+    getUserReservations, updateUserProfile
 };

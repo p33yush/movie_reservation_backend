@@ -1,11 +1,21 @@
 const prisma = require('../config/database');
 const emailService=require('../services/email.service');
 const QRCode=require('qrcode');
+const stripe = require('../config/stripe');
 
 async function handleWebhook(req, res, next) {
     try {
-        const event = req.body;
+        const sig = req.headers['stripe-signature'];
+        const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+        let event;
+        try {
+            // This verifies the cryptographic signature to ensure the request actually came from Stripe
+            event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+        } catch (err) {
+            console.error(' Webhook signature verification failed.', err.message);
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
 
         if (event.type === 'payment_intent.succeeded') {
             const paymentIntent = event.data.object;

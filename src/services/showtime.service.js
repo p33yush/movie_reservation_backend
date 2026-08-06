@@ -117,10 +117,22 @@ async function deleteShowtime(id) {
         throw new AppError('Showtime not found', 404);
     }
 
-    await prisma.showtime.delete({ where: { id: parseInt(id) } });
+    // NEW: Stop deletion if people have paid for tickets to this specific showtime
+    const activeReservations = await prisma.reservation.findFirst({
+        where: {
+            showtimeId: parseInt(id),
+            status: 'CONFIRMED'
+        }
+    });
 
+    if (activeReservations) {
+        throw new AppError('Cannot delete: Showtime has active confirmed bookings.', 409);
+    }
+
+    await prisma.showtime.delete({ where: { id: parseInt(id) } });
     return existing;
 }
+
 
 async function getSeatMap(showtimeId) {
     // 1. Get the showtime so we know the screenId
@@ -161,6 +173,7 @@ async function getSeatMap(showtimeId) {
     return {
         showtimeId: showtime.id,
         screenName: showtime.screen.name,
+        price: showtime.price,
         seats: groupedSeats
     };
 }
