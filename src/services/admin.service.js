@@ -32,7 +32,7 @@ async function getDashboardStats({ startDate, endDate } = {}) {
                 select: {
                     reservations: {
                         where: { status: 'CONFIRMED', ...dateFilter },
-                        select: { totalAmount: true }
+                        select: { totalAmount: true, reservedSeats: true }
                     }
                 }
             }
@@ -41,14 +41,17 @@ async function getDashboardStats({ startDate, endDate } = {}) {
 
     const revenueByMovie = movies.map(movie => {
         let movieRevenue = 0;
+        let tickets = 0;
         movie.showtimes.forEach(showtime => {
             showtime.reservations.forEach(res => {
                 movieRevenue += parseFloat(res.totalAmount);
+                tickets += res.reservedSeats.length;
             });
         });
         return {
             title: movie.title,
-            revenue: movieRevenue
+            revenue: movieRevenue,
+            tickets
         };
     }).filter(movie => movie.revenue > 0).sort((a,b) => b.revenue - a.revenue);
 
